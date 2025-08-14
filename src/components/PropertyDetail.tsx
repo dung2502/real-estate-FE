@@ -7,10 +7,12 @@ import {
   Square3Stack3DIcon,
   PencilIcon,
   TrashIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  HomeIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 import apiService from '../services/api';
-import { Property } from '../types';
+import { Property, PropertyImage } from '../types';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
 const PropertyDetail: React.FC = () => {
@@ -20,15 +22,22 @@ const PropertyDetail: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const { data: property, isLoading, error } = useQuery({
+  const { data: property, isLoading: isLoadingProperty, error: propertyError } = useQuery({
     queryKey: ['property', id],
     queryFn: () => apiService.getProperty(Number(id)),
+  });
+
+  const { data: imagesData, isLoading: isLoadingImages, error: imagesError } = useQuery({
+    queryKey: ['property-images', id],
+    queryFn: () => apiService.getPropertyImages(Number(id)),
+    enabled: !!id,
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => apiService.deleteProperty(Number(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['properties'] });
+      queryClient.invalidateQueries({ queryKey: ['property-images', id] });
       navigate('/properties');
     },
   });
@@ -43,6 +52,40 @@ const PropertyDetail: React.FC = () => {
 
   const formatArea = (area: number) => {
     return `${area}m²`;
+  };
+
+  const getPropertyTypeText = (type: string) => {
+    switch (type) {
+      case 'apartment':
+        return 'Căn hộ';
+      case 'house':
+        return 'Nhà phố';
+      case 'villa':
+        return 'Biệt thự';
+      case 'office':
+        return 'Văn phòng';
+      case 'land':
+        return 'Đất nền';
+      default:
+        return type;
+    }
+  };
+
+  const getPropertyTypeIcon = (type: string) => {
+    switch (type) {
+      case 'apartment':
+        return '🏢';
+      case 'house':
+        return '🏠';
+      case 'villa':
+        return '🏰';
+      case 'office':
+        return '🏢';
+      case 'land':
+        return '🌱';
+      default:
+        return '🏠';
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -75,7 +118,7 @@ const PropertyDetail: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingProperty || isLoadingImages) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -83,12 +126,14 @@ const PropertyDetail: React.FC = () => {
     );
   }
 
-  if (error || !property) {
+  if (propertyError || imagesError || !property) {
     return (
       <div className="text-center py-12">
         <div className="text-red-600 text-lg">Không thể tải thông tin bất động sản</div>
         <div className="text-sm text-gray-600 mt-2">
-          {error instanceof Error ? error.message : 'Không thể kết nối đến server'}
+          {propertyError instanceof Error ? propertyError.message : 
+           imagesError instanceof Error ? imagesError.message : 
+           'Không thể kết nối đến server'}
         </div>
         <button
           onClick={() => navigate('/properties')}
@@ -105,8 +150,8 @@ const PropertyDetail: React.FC = () => {
     deleteMutation.mutate();
   };
 
-  // Đảm bảo images luôn có giá trị, nếu không thì là array rỗng
-  const images = property.images || [];
+  // Get images from the separate API response
+  const images = imagesData?.images || [];
   const hasImages = images.length > 0;
 
   return (
@@ -124,9 +169,14 @@ const PropertyDetail: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{property.title}</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              {property.district}, {property.city}
-            </p>
+            <div className="flex items-center mt-2 space-x-4">
+              <span className="text-sm text-gray-600">
+                {property.district}, {property.city}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {getPropertyTypeIcon(property.property_type)} {getPropertyTypeText(property.property_type)}
+              </span>
+            </div>
           </div>
           
           <div className="mt-4 sm:mt-0 flex space-x-3">
@@ -247,7 +297,7 @@ const PropertyDetail: React.FC = () => {
                 </div>
               </div>
 
-              {property.bedrooms && (
+              {property.bedrooms && property.bedrooms > 0 && (
                 <div className="flex items-center">
                   <div className="h-6 w-6 bg-blue-100 rounded mr-3 flex items-center justify-center">
                     <span className="text-xs font-bold text-blue-600">🛏️</span>
@@ -259,7 +309,7 @@ const PropertyDetail: React.FC = () => {
                 </div>
               )}
 
-              {property.bathrooms && (
+              {property.bathrooms && property.bathrooms > 0 && (
                 <div className="flex items-center">
                   <div className="h-6 w-6 bg-blue-100 rounded mr-3 flex items-center justify-center">
                     <span className="text-xs font-bold text-blue-600">🚿</span>
@@ -271,7 +321,7 @@ const PropertyDetail: React.FC = () => {
                 </div>
               )}
 
-              {property.floors && (
+              {property.floors && property.floors > 1 && (
                 <div className="flex items-center">
                   <div className="h-6 w-6 bg-blue-100 rounded mr-3 flex items-center justify-center">
                     <span className="text-xs font-bold text-blue-600">🏢</span>
@@ -294,7 +344,27 @@ const PropertyDetail: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {property.postal_code && (
+                <div className="flex items-center">
+                  <div className="h-6 w-6 bg-blue-100 rounded mr-3 flex items-center justify-center">
+                    <span className="text-xs font-bold text-blue-600">📮</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Mã bưu điện</p>
+                    <p className="text-lg font-semibold text-gray-900">{property.postal_code}</p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Address */}
+            {property.address && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Địa chỉ</h3>
+                <p className="text-gray-600">{property.address}</p>
+              </div>
+            )}
 
             {/* Status */}
             <div className="mt-6">
@@ -329,35 +399,33 @@ const PropertyDetail: React.FC = () => {
             )}
 
             {/* Contact Information */}
-            {(property.contact_name || property.contact_phone || property.contact_email) && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Thông tin liên hệ</h3>
-                <div className="space-y-2">
-                  {property.contact_name && (
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Tên:</span> {property.contact_name}
-                    </p>
-                  )}
-                  {property.contact_phone && (
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Điện thoại:</span> {property.contact_phone}
-                    </p>
-                  )}
-                  {property.contact_email && (
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Email:</span> {property.contact_email}
-                    </p>
-                  )}
-                </div>
+            <div className="mt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Thông tin liên hệ</h3>
+              <div className="space-y-2">
+                {property.contact_name && (
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Tên:</span> {property.contact_name}
+                  </p>
+                )}
+                {property.contact_phone && (
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Điện thoại:</span> {property.contact_phone}
+                  </p>
+                )}
+                {property.contact_email && (
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Email:</span> {property.contact_email}
+                  </p>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-white shadow rounded-lg p-6 sticky top-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin liên hệ</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin tóm tắt</h3>
             
             <div className="space-y-4">
               <div>
@@ -365,6 +433,13 @@ const PropertyDetail: React.FC = () => {
                 <p className="text-2xl font-bold text-green-600">{formatPrice(property.price)}</p>
               </div>
               
+              <div>
+                <p className="text-sm font-medium text-gray-500">Loại bất động sản</p>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {getPropertyTypeIcon(property.property_type)} {getPropertyTypeText(property.property_type)}
+                </span>
+              </div>
+
               <div>
                 <p className="text-sm font-medium text-gray-500">Trạng thái</p>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(property.status)}`}>
@@ -381,6 +456,13 @@ const PropertyDetail: React.FC = () => {
                 <p className="text-sm font-medium text-gray-500">Vị trí</p>
                 <p className="text-sm text-gray-900">{property.district}, {property.city}</p>
               </div>
+
+              {property.address && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Địa chỉ</p>
+                  <p className="text-sm text-gray-900">{property.address}</p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 space-y-3">

@@ -6,24 +6,27 @@ export interface User {
 
 export interface PropertyImage {
   id: number;
+  property_id: number;
   image_path: string;
   image_name: string;
   is_primary: boolean;
   sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Property {
   id: number;
   title: string;
   description?: string;
-  property_type?: string;
+  property_type: 'apartment' | 'house' | 'villa' | 'office' | 'land';
   status: 'available' | 'sold' | 'rented' | 'pending';
   price: number;
   area: number;
   bedrooms?: number;
   bathrooms?: number;
   floors?: number;
-  address?: string;
+  address: string;
   city: string;
   district: string;
   postal_code?: string;
@@ -31,27 +34,26 @@ export interface Property {
   longitude?: number;
   year_built?: number;
   features?: string[];
-  contact_name?: string;
-  contact_phone?: string;
+  contact_name: string;
+  contact_phone: string;
   contact_email?: string;
   created_by?: number;
   updated_by?: number;
   created_at: string;
   updated_at: string;
-  images: PropertyImage[];
 }
 
 export interface PropertyFormData {
   title: string;
   description?: string;
-  property_type?: string;
+  property_type: 'apartment' | 'house' | 'villa' | 'office' | 'land';
   status: 'available' | 'sold' | 'rented' | 'pending';
   price: number;
   area: number;
   bedrooms?: number;
   bathrooms?: number;
   floors?: number;
-  address?: string;
+  address: string;
   city: string;
   district: string;
   postal_code?: string;
@@ -59,8 +61,8 @@ export interface PropertyFormData {
   longitude?: number;
   year_built?: number;
   features?: string[];
-  contact_name?: string;
-  contact_phone?: string;
+  contact_name: string;
+  contact_phone: string;
   contact_email?: string;
   images?: File[];
 }
@@ -95,6 +97,7 @@ export interface PropertyFilters {
   page?: number;
   city?: string;
   status?: string;
+  property_type?: string;
   min_price?: number;
   max_price?: number;
   sort?: string;

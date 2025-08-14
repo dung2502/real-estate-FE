@@ -6,7 +6,8 @@ import {
   PropertyFormData, 
   PropertyFilters, 
   PaginatedResponse,
-  ApiResponse 
+  ApiResponse,
+  PropertyImage
 } from '../types';
 
 // Tạo instance axios với base URL
@@ -132,8 +133,7 @@ class ApiService {
         formData.append('features[]', feature);
       });
     }
-    
-    // Thêm ảnh mới nếu có
+
     if (data.images && data.images.length > 0) {
       data.images.forEach(image => {
         formData.append('images[]', image);
@@ -158,7 +158,13 @@ class ApiService {
     return response.data;
   }
 
-  // Property Images
+  // Get property images
+  async getPropertyImages(propertyId: number): Promise<{ property_id: string; images: PropertyImage[] }> {
+    const response = await api.get(`/properties/${propertyId}/images`);
+    return response.data;
+  }
+
+  // Upload property images
   async uploadPropertyImages(propertyId: number, images: File[]): Promise<ApiResponse<void>> {
     const formData = new FormData();
     
