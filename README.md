@@ -248,34 +248,4 @@ npm run test:e2e
 localStorage.setItem('debug', 'true')
 ```
 
-## 📝 Contributing
-
-1. Fork repository
-2. Tạo feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to branch: `git push origin feature/AmazingFeature`
-5. Tạo Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 📞 Support
-
-- **Email**: support@example.com
-- **Documentation**: [Wiki](link-to-wiki)
-- **Issues**: [GitHub Issues](link-to-issues)
-
-## 🎯 Roadmap
-
-- [ ] Dark mode support
-- [ ] Advanced search filters
-- [ ] Export data functionality
-- [ ] Real-time notifications
-- [ ] Mobile app (React Native)
-- [ ] Multi-language support
-- [ ] Advanced analytics dashboard
-
----
-
-**Made with ❤️ by [Your Name]**
+**Made with ❤️ by Dung2502**

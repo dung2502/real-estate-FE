@@ -83,7 +83,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="py-4">
         {children}
       </main>

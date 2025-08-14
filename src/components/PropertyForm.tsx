@@ -29,6 +29,9 @@ const schema = yup.object({
   contact_phone: yup.string().required('Số điện thoại liên hệ là bắt buộc'),
   contact_email: yup.string().email('Email không hợp lệ').optional(),
   features: yup.array().of(yup.string()).optional(),
+  images: yup.array().of(yup.mixed<File>().test("fileSize", "Ảnh phải nhỏ hơn 10MB", file => {
+    return !file || (file && file.size <= 10 * 1024 * 1024);
+  })).optional()
 }).required();
 
 const PropertyForm: React.FC = () => {
@@ -61,9 +64,10 @@ const PropertyForm: React.FC = () => {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm({
     resolver: yupResolver(schema),
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
     defaultValues: {
       property_type: 'apartment',
       status: 'available',
@@ -74,7 +78,6 @@ const PropertyForm: React.FC = () => {
     },
   });
 
-  // Set form values when property data is loaded
   useEffect(() => {
     if (property) {
       setValue('title', property.title);
@@ -99,17 +102,13 @@ const PropertyForm: React.FC = () => {
       setFeatures(property.features || []);
     }
   }, [property, setValue]);
-
-  // Set existing images when editing
   useEffect(() => {
     if (existingImagesData && existingImagesData.images) {
-      // Convert existing images to preview URLs (for display only)
       const previewUrls = existingImagesData.images.map(img => img.image_path);
       setImagePreviews(previewUrls);
     }
   }, [existingImagesData]);
 
-  // Create property mutation
   const createMutation = useMutation({
     mutationFn: (data: PropertyFormData) => apiService.createProperty(data),
     onSuccess: () => {
@@ -129,33 +128,25 @@ const PropertyForm: React.FC = () => {
     },
   });
 
-  // Handle image selection
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const newImages = [...selectedImages, ...files];
     setSelectedImages(newImages);
 
-    // Create previews
     const newPreviews = files.map(file => URL.createObjectURL(file));
     setImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
-  // Remove image
   const removeImage = (index: number) => {
-    // If editing and removing existing image, we need to handle it differently
     if (isEditing && index < (existingImagesData?.images?.length || 0)) {
-      // This would require a separate API call to delete the existing image
-      // For now, we'll just remove it from previews
       setImagePreviews(prev => prev.filter((_, i) => i !== index));
     } else {
-      // Remove new selected image
       const adjustedIndex = isEditing ? index - (existingImagesData?.images?.length || 0) : index;
       setSelectedImages(prev => prev.filter((_, i) => i !== adjustedIndex));
       setImagePreviews(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  // Add feature
   const addFeature = () => {
     if (newFeature.trim() && !features.includes(newFeature.trim())) {
       setFeatures(prev => [...prev, newFeature.trim()]);
@@ -163,18 +154,21 @@ const PropertyForm: React.FC = () => {
     }
   };
 
-  // Remove feature
   const removeFeature = (feature: string) => {
     setFeatures(prev => prev.filter(f => f !== feature));
   };
 
-  // Handle form submission
   const onSubmit = async (data: any) => {
+    console.log('Form data before submission:', data);
+    console.log('Features:', features);
+
     const formData: PropertyFormData = {
       ...data,
       features,
       images: selectedImages.length > 0 ? selectedImages : undefined,
     };
+
+    console.log('Final form data:', formData);
 
     if (isEditing) {
       await updateMutation.mutateAsync(formData);
@@ -191,6 +185,14 @@ const PropertyForm: React.FC = () => {
     );
   }
 
+  if (isEditing && !property) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-500">Không thể tải dữ liệu bất động sản</div>
+      </div>
+    );
+  }
+
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -201,8 +203,7 @@ const PropertyForm: React.FC = () => {
             {isEditing ? 'Chỉnh sửa bất động sản' : 'Thêm bất động sản mới'}
           </h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Information */}
+          <form key={id || 'create'} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin cơ bản</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

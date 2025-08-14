@@ -33,7 +33,7 @@ const LoginForm: React.FC = () => {
     try {
       const response = await apiService.login(data);
       login(response.token, response.user);
-      navigate('/properties');
+      navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
     } finally {

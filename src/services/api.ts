@@ -10,7 +10,6 @@ import {
   PropertyImage
 } from '../types';
 
-// Tạo instance axios với base URL
 const api = axios.create({
   baseURL: 'http://localhost:8000/api',
   headers: {
@@ -47,7 +46,6 @@ api.interceptors.response.use(
 );
 
 class ApiService {
-  // Authentication
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/login', credentials);
     return response.data;
@@ -58,7 +56,6 @@ class ApiService {
     return response.data;
   }
 
-  // Properties
   async getProperties(filters: PropertyFilters): Promise<PaginatedResponse<Property>> {
     const params = new URLSearchParams();
     
@@ -77,31 +74,53 @@ class ApiService {
 
   async getProperty(id: number): Promise<Property> {
     const response = await api.get<Property>(`/properties/${id}`);
+    console.log(response.data);
     return response.data;
   }
 
   async createProperty(data: PropertyFormData): Promise<ApiResponse<Property>> {
     const formData = new FormData();
-    
-    // Thêm các trường cơ bản
+
+    // Required fields
     formData.append('title', data.title);
     formData.append('price', data.price.toString());
     formData.append('area', data.area.toString());
     formData.append('city', data.city);
     formData.append('district', data.district);
     formData.append('status', data.status);
-    
+    formData.append('property_type', data.property_type);
+    formData.append('address', data.address);
+    formData.append('contact_name', data.contact_name);
+    formData.append('contact_phone', data.contact_phone);
+    formData.append('bedrooms', data.bedrooms?.toString() ?? '0');
+    formData.append('bathrooms', data.bathrooms?.toString() ?? '0');
+    formData.append('floors', data.floors?.toString() ?? '1');
+
     if (data.description) {
       formData.append('description', data.description);
     }
-    
+    if (data.postal_code) {
+      formData.append('postal_code', data.postal_code);
+    }
+    if (data.latitude !== undefined && data.latitude !== null) {
+      formData.append('latitude', data.latitude.toString());
+    }
+    if (data.longitude !== undefined && data.longitude !== null) {
+      formData.append('longitude', data.longitude.toString());
+    }
+    if (data.year_built) {
+      formData.append('year_built', data.year_built.toString());
+    }
+    if (data.contact_email) {
+      formData.append('contact_email', data.contact_email);
+    }
+
     if (data.features && data.features.length > 0) {
       data.features.forEach(feature => {
         formData.append('features[]', feature);
       });
     }
-    
-    // Thêm ảnh nếu có
+
     if (data.images && data.images.length > 0) {
       data.images.forEach(image => {
         formData.append('images[]', image);
@@ -113,21 +132,36 @@ class ApiService {
         'Content-Type': 'multipart/form-data',
       },
     });
+
     return response.data;
   }
 
+
   async updateProperty(id: number, data: Partial<PropertyFormData>): Promise<ApiResponse<void>> {
     const formData = new FormData();
-    
-    // Thêm các trường có giá trị
-    if (data.title) formData.append('title', data.title);
-    if (data.price) formData.append('price', data.price.toString());
-    if (data.area) formData.append('area', data.area.toString());
-    if (data.city) formData.append('city', data.city);
-    if (data.district) formData.append('district', data.district);
-    if (data.status) formData.append('status', data.status);
-    if (data.description) formData.append('description', data.description);
-    
+
+    if (data.title !== undefined) formData.append('title', data.title);
+    if (data.price !== undefined) formData.append('price', data.price.toString());
+    if (data.area !== undefined) formData.append('area', data.area.toString());
+    if (data.city !== undefined) formData.append('city', data.city);
+    if (data.district !== undefined) formData.append('district', data.district);
+    if (data.status !== undefined) formData.append('status', data.status);
+    if (data.property_type !== undefined) formData.append('property_type', data.property_type);
+    if (data.address !== undefined) formData.append('address', data.address);
+    if (data.contact_name !== undefined) formData.append('contact_name', data.contact_name);
+    if (data.contact_phone !== undefined) formData.append('contact_phone', data.contact_phone);
+
+    if (data.bedrooms !== undefined) formData.append('bedrooms', data.bedrooms.toString());
+    if (data.bathrooms !== undefined) formData.append('bathrooms', data.bathrooms.toString());
+    if (data.floors !== undefined) formData.append('floors', data.floors.toString());
+
+    if (data.description !== undefined) formData.append('description', data.description);
+    if (data.postal_code !== undefined) formData.append('postal_code', data.postal_code);
+    if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
+    if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
+    if (data.year_built !== undefined) formData.append('year_built', data.year_built.toString());
+    if (data.contact_email !== undefined) formData.append('contact_email', data.contact_email);
+
     if (data.features && data.features.length > 0) {
       data.features.forEach(feature => {
         formData.append('features[]', feature);
@@ -140,7 +174,7 @@ class ApiService {
       });
     }
 
-    const response = await api.put<ApiResponse<void>>(`/properties/${id}`, formData, {
+    const response = await api.post<ApiResponse<void>>(`/properties/${id}?_method=PUT`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -158,13 +192,12 @@ class ApiService {
     return response.data;
   }
 
-  // Get property images
+
   async getPropertyImages(propertyId: number): Promise<{ property_id: string; images: PropertyImage[] }> {
     const response = await api.get(`/properties/${propertyId}/images`);
     return response.data;
   }
 
-  // Upload property images
   async uploadPropertyImages(propertyId: number, images: File[]): Promise<ApiResponse<void>> {
     const formData = new FormData();
     

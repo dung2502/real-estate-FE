@@ -26,7 +26,6 @@ const PropertyList: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Thêm logic search vào filters nếu cần
       setFilters(prev => ({ ...prev, page: 1 }));
     }
     refetch();
@@ -94,7 +93,6 @@ const PropertyList: React.FC = () => {
         </div>
       </div>
 
-      {/* Search and Filters */}
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="px-4 py-5 sm:p-6">
           {/* Search Bar */}
@@ -121,7 +119,6 @@ const PropertyList: React.FC = () => {
             </div>
           </form>
 
-          {/* Filter Toggle */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -132,7 +129,6 @@ const PropertyList: React.FC = () => {
             </button>
           </div>
 
-          {/* Filters Form */}
           {showFilters && (
             <PropertyFiltersForm
               filters={filters}
@@ -142,7 +138,6 @@ const PropertyList: React.FC = () => {
         </div>
       </div>
 
-      {/* Properties Grid */}
       {data?.data && data.data.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -151,7 +146,6 @@ const PropertyList: React.FC = () => {
             ))}
           </div>
 
-          {/* Pagination */}
           {data.meta.last_page > 1 && (
             <div className="mt-8 flex items-center justify-between">
               <div className="text-sm text-gray-700">

@@ -5,7 +5,6 @@ import { BuildingOfficeIcon, PlusIcon, ChartBarIcon } from '@heroicons/react/24/
 const HomePage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Hero Section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Chào mừng đến với hệ thống quản lý bất động sản
@@ -15,7 +14,6 @@ const HomePage: React.FC = () => {
         </p>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <Link
           to="/properties"

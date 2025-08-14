@@ -15,7 +15,6 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-  // Fetch images for this property using the separate API
   const { data: imagesData } = useQuery({
     queryKey: ['property-images', property.id],
     queryFn: () => apiService.getPropertyImages(property.id),

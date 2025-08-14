@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -22,10 +22,13 @@ const PropertyDetail: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+
   const { data: property, isLoading: isLoadingProperty, error: propertyError } = useQuery({
     queryKey: ['property', id],
-    queryFn: () => apiService.getProperty(Number(id)),
+    queryFn: () => apiService.getProperty(Number(id))
   });
+
+  console.log(property)
 
   const { data: imagesData, isLoading: isLoadingImages, error: imagesError } = useQuery({
     queryKey: ['property-images', id],
@@ -150,13 +153,11 @@ const PropertyDetail: React.FC = () => {
     deleteMutation.mutate();
   };
 
-  // Get images from the separate API response
   const images = imagesData?.images || [];
   const hasImages = images.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="mb-8">
         <button
           onClick={() => navigate('/properties')}
@@ -171,7 +172,7 @@ const PropertyDetail: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">{property.title}</h1>
             <div className="flex items-center mt-2 space-x-4">
               <span className="text-sm text-gray-600">
-                {property.district}, {property.city}
+                {property.district} || {property.city}
               </span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 {getPropertyTypeIcon(property.property_type)} {getPropertyTypeText(property.property_type)}
