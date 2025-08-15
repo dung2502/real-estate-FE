@@ -35,7 +35,7 @@ Hệ thống quản lý bất động sản với frontend React + TypeScript v�
 
 ### Yêu cầu hệ thống
 - Node.js 18+ 
-- npm 9+ hoặc yarn
+- npm 9+ 
 - TypeScript 4.9.7
 - Laravel backend chạy trên `http://localhost:8000`
 
