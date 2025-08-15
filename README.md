@@ -36,6 +36,7 @@ Hệ thống quản lý bất động sản với frontend React + TypeScript v�
 ### Yêu cầu hệ thống
 - Node.js 18+ 
 - npm 9+ hoặc yarn
+- TypeScript 4.9.7
 - Laravel backend chạy trên `http://localhost:8000`
 
 ### Bước 1: Clone repository
@@ -187,65 +188,5 @@ src/
 3. React Query → API service
 4. API service → Laravel backend
 5. Response → Component update
-
-## 🚀 Deployment
-
-### Build Production
-```bash
-npm run build
-```
-
-### Environment Variables
-```env
-REACT_APP_API_URL=https://your-api-domain.com
-REACT_APP_ENV=production
-```
-
-### Nginx Configuration
-```nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
-```
-
-## 🧪 Testing
-
-### Unit Tests
-```bash
-npm test
-```
-
-### E2E Tests
-```bash
-npm run test:e2e
-```
-
-## 🔧 Troubleshooting
-
-### Lỗi thường gặp
-
-#### 1. CORS Error
-```bash
-# Kiểm tra Laravel CORS configuration
-# Đảm bảo frontend domain được allow
-```
-
-#### 2. Authentication Error
-```bash
-# Kiểm tra token trong localStorage
-# Kiểm tra Laravel Sanctum configuration
-```
-
-#### 3. Image Upload Error
-```bash
-# Kiểm tra Laravel storage configuration
-# Đảm bảo thư mục storage có quyền write
-```
-
-### Debug Mode
-```bash
-# Bật debug trong browser console
-localStorage.setItem('debug', 'true')
-```
 
 **Made with ❤️ by Dung2502**
