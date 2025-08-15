@@ -18,7 +18,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const { data: imagesData } = useQuery({
     queryKey: ['property-images', property.id],
     queryFn: () => apiService.getPropertyImages(property.id),
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const formatPrice = (price: number) => {
@@ -80,24 +80,24 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
     }
   };
 
-  // Get images from the API response
   const images = imagesData?.images || [];
   const primaryImage = images.find((img: PropertyImage) => img.is_primary) || images[0];
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {/* Image */}
       <div className="relative h-48 bg-gray-200">
         {primaryImage ? (
-          <img
-            src={primaryImage.image_path}
-            alt={property.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/400x300?text=No+Image';
-            }}
-          />
+          <div className="w-full h-full overflow-hidden">
+            <img
+              src={primaryImage.image_path}
+              alt={property.title}
+              className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+              }}
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
@@ -107,21 +107,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
         )}
 
-        {/* Status Badge */}
         <div className="absolute top-2 left-2">
           <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(property.status)}`}>
             {getStatusText(property.status)}
           </span>
         </div>
 
-        {/* Property Type Badge */}
         <div className="absolute top-2 right-2">
           <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
             {getPropertyTypeText(property.property_type)}
           </span>
         </div>
 
-        {/* Image Count Badge */}
         {images.length > 1 && (
           <div className="absolute bottom-2 right-2">
             <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-black bg-opacity-75 text-white">
@@ -130,8 +127,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
         )}
       </div>
-
-      {/* Content */}
+      
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {property.title}
@@ -154,20 +150,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
         </div>
 
-        {/* Property Details */}
-        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-4">
           {property.bedrooms && property.bedrooms > 0 && (
-            <span>🛏️ {property.bedrooms} phòng ngủ</span>
+            <span className="whitespace-nowrap">🛏️ {property.bedrooms} phòng ngủ</span>
           )}
           {property.bathrooms && property.bathrooms > 0 && (
-            <span>🚿 {property.bathrooms} phòng tắm</span>
+            <span className="whitespace-nowrap">🚿 {property.bathrooms} phòng tắm</span>
           )}
-          {property.floors && property.floors > 1 && (
-            <span>🏢 {property.floors} tầng</span>
+          {property.floors && (
+            <span className="whitespace-nowrap">🏢 {property.floors} tầng</span>
           )}
         </div>
 
-        {/* Action Button */}
         <Link
           to={`/properties/${property.id}`}
           className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"

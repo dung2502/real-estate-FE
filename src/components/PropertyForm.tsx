@@ -45,14 +45,12 @@ const PropertyForm: React.FC = () => {
   const [features, setFeatures] = useState<string[]>([]);
   const [newFeature, setNewFeature] = useState('');
 
-  // Fetch property data if editing
   const { data: property, isLoading: isLoadingProperty } = useQuery({
     queryKey: ['property', id],
     queryFn: () => apiService.getProperty(Number(id)),
     enabled: isEditing,
   });
 
-  // Fetch existing images if editing
   const { data: existingImagesData } = useQuery({
     queryKey: ['property-images', id],
     queryFn: () => apiService.getPropertyImages(Number(id)),
@@ -71,8 +69,8 @@ const PropertyForm: React.FC = () => {
     defaultValues: {
       property_type: 'apartment',
       status: 'available',
-      bedrooms: 0,
-      bathrooms: 0,
+      bedrooms: 1,
+      bathrooms: 1,
       floors: 1,
       features: [],
     },
@@ -117,7 +115,6 @@ const PropertyForm: React.FC = () => {
     },
   });
 
-  // Update property mutation
   const updateMutation = useMutation({
     mutationFn: (data: Partial<PropertyFormData>) => apiService.updateProperty(Number(id), data),
     onSuccess: () => {
@@ -137,15 +134,35 @@ const PropertyForm: React.FC = () => {
     setImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
-  const removeImage = (index: number) => {
-    if (isEditing && index < (existingImagesData?.images?.length || 0)) {
-      setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    } else {
-      const adjustedIndex = isEditing ? index - (existingImagesData?.images?.length || 0) : index;
-      setSelectedImages(prev => prev.filter((_, i) => i !== adjustedIndex));
-      setImagePreviews(prev => prev.filter((_, i) => i !== index));
+const deleteImageMutation = useMutation({
+  mutationFn: ({ propertyId, imageId }: { propertyId: number; imageId: number }) => 
+    apiService.deletePropertyImage(propertyId, imageId),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['property-images', id] });
+  },
+});
+
+const removeImage = async (index: number) => {
+  if (isEditing && index < (existingImagesData?.images?.length || 0)) {
+    const imageToDelete = existingImagesData?.images?.[index];
+    if (imageToDelete) {
+      try {
+        await deleteImageMutation.mutateAsync({
+          propertyId: Number(id),
+          imageId: imageToDelete.id
+        });
+        setImagePreviews(prev => prev.filter((_, i) => i !== index));
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      
+      }
     }
-  };
+  } else {
+    const adjustedIndex = isEditing ? index - (existingImagesData?.images?.length || 0) : index;
+    setSelectedImages(prev => prev.filter((_, i) => i !== adjustedIndex));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  }
+};
 
   const addFeature = () => {
     if (newFeature.trim() && !features.includes(newFeature.trim())) {
@@ -212,15 +229,15 @@ const PropertyForm: React.FC = () => {
                     Tiêu đề *
                   </label>
                   <input
-                    {...register('title')}
-                    type="text"
-                    id="title"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.title ? 'border-red-300' : ''
-                    }`}
+                      {...register('title')}
+                      type="text"
+                      id="title"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.title ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
                   )}
                 </div>
 
@@ -229,11 +246,11 @@ const PropertyForm: React.FC = () => {
                     Loại bất động sản *
                   </label>
                   <select
-                    {...register('property_type')}
-                    id="property_type"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.property_type ? 'border-red-300' : ''
-                    }`}
+                      {...register('property_type')}
+                      id="property_type"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.property_type ? 'border-red-300' : ''
+                      }`}
                   >
                     <option value="apartment">Căn hộ</option>
                     <option value="house">Nhà phố</option>
@@ -242,7 +259,7 @@ const PropertyForm: React.FC = () => {
                     <option value="land">Đất nền</option>
                   </select>
                   {errors.property_type && (
-                    <p className="mt-1 text-sm text-red-600">{errors.property_type.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.property_type.message}</p>
                   )}
                 </div>
 
@@ -253,14 +270,14 @@ const PropertyForm: React.FC = () => {
                   <input
                     {...register('price', { valueAsNumber: true })}
                     type="number"
-                    id="price"
+                      id="price"
                     className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.price ? 'border-red-300' : ''
                     }`}
-                  />
-                  {errors.price && (
-                    <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-                  )}
+                        />
+                    {errors.price && (
+                        <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+                    )}
                 </div>
 
                 <div>
@@ -269,14 +286,14 @@ const PropertyForm: React.FC = () => {
                   </label>
                   <input
                     {...register('area', { valueAsNumber: true })}
-                    type="number"
-                    id="area"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.area ? 'border-red-300' : ''
-                    }`}
+                      type="number"
+                      id="area"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.area ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.area && (
-                    <p className="mt-1 text-sm text-red-600">{errors.area.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.area.message}</p>
                   )}
                 </div>
 
@@ -285,11 +302,11 @@ const PropertyForm: React.FC = () => {
                     Trạng thái *
                   </label>
                   <select
-                    {...register('status')}
-                    id="status"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.status ? 'border-red-300' : ''
-                    }`}
+                      {...register('status')}
+                      id="status"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.status ? 'border-red-300' : ''
+                      }`}
                   >
                     <option value="available">Có sẵn</option>
                     <option value="sold">Đã bán</option>
@@ -297,7 +314,7 @@ const PropertyForm: React.FC = () => {
                     <option value="pending">Chờ xử lý</option>
                   </select>
                   {errors.status && (
-                    <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
                   )}
                 </div>
 
@@ -307,15 +324,15 @@ const PropertyForm: React.FC = () => {
                   </label>
                   <input
                     {...register('bedrooms', { valueAsNumber: true })}
-                    type="number"
-                    id="bedrooms"
-                    min="0"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.bedrooms ? 'border-red-300' : ''
-                    }`}
+                      type="number"
+                      id="bedrooms"
+                      min="0"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.bedrooms ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.bedrooms && (
-                    <p className="mt-1 text-sm text-red-600">{errors.bedrooms.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.bedrooms.message}</p>
                   )}
                 </div>
 
@@ -325,15 +342,15 @@ const PropertyForm: React.FC = () => {
                   </label>
                   <input
                     {...register('bathrooms', { valueAsNumber: true })}
-                    type="number"
-                    id="bathrooms"
-                    min="0"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.bathrooms ? 'border-red-300' : ''
-                    }`}
+                      type="number"
+                      id="bathrooms"
+                      min="0"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.bathrooms ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.bathrooms && (
-                    <p className="mt-1 text-sm text-red-600">{errors.bathrooms.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.bathrooms.message}</p>
                   )}
                 </div>
 
@@ -343,15 +360,15 @@ const PropertyForm: React.FC = () => {
                   </label>
                   <input
                     {...register('floors', { valueAsNumber: true })}
-                    type="number"
-                    id="floors"
-                    min="1"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.floors ? 'border-red-300' : ''
-                    }`}
+                      type="number"
+                      id="floors"
+                      min="1"
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.floors ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.floors && (
-                    <p className="mt-1 text-sm text-red-600">{errors.floors.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.floors.message}</p>
                   )}
                 </div>
 
@@ -361,8 +378,8 @@ const PropertyForm: React.FC = () => {
                   </label>
                   <input
                     {...register('year_built', { valueAsNumber: true })}
-                    type="number"
-                    id="year_built"
+                      type="number"
+                      id="year_built"
                     min="1900"
                     max={new Date().getFullYear()}
                     className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
@@ -370,13 +387,12 @@ const PropertyForm: React.FC = () => {
                     }`}
                   />
                   {errors.year_built && (
-                    <p className="mt-1 text-sm text-red-600">{errors.year_built.message}</p>
+                      <p className="mt-1 text-sm text-red-600">{errors.year_built.message}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Location Information */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin vị trí</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -385,13 +401,13 @@ const PropertyForm: React.FC = () => {
                     Địa chỉ *
                   </label>
                   <textarea
-                    {...register('address')}
-                    id="address"
-                    rows={2}
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.address ? 'border-red-300' : ''
-                    }`}
-                    placeholder="Nhập địa chỉ chi tiết..."
+                      {...register('address')}
+                      id="address"
+                      rows={2}
+                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.address ? 'border-red-300' : ''
+                      }`}
+                      placeholder="Nhập địa chỉ chi tiết..."
                   />
                   {errors.address && (
                     <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
@@ -474,7 +490,6 @@ const PropertyForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Contact Information */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin liên hệ</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -531,7 +546,6 @@ const PropertyForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Description */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Mô tả</h3>
               <div>
@@ -548,7 +562,6 @@ const PropertyForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Features */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Tiện ích</h3>
               <div className="flex flex-wrap gap-2 mb-2">
@@ -587,11 +600,8 @@ const PropertyForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Image Upload */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Hình ảnh</h3>
-              
-              {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   {imagePreviews.map((preview, index) => (
@@ -620,7 +630,6 @@ const PropertyForm: React.FC = () => {
                 </div>
               )}
 
-              {/* Upload Button */}
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -647,7 +656,6 @@ const PropertyForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Form Actions */}
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
