@@ -50,7 +50,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
   return (
     <div className="border-t border-gray-200 pt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* City Filter */}
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
             Thành phố
@@ -70,7 +69,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
           </select>
         </div>
 
-        {/* Status Filter */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
             Trạng thái
@@ -90,7 +88,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
           </select>
         </div>
 
-        {/* Min Price Filter */}
         <div>
           <label htmlFor="min_price" className="block text-sm font-medium text-gray-700 mb-1">
             Giá tối thiểu (VNĐ)
@@ -105,7 +102,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
           />
         </div>
 
-        {/* Max Price Filter */}
         <div>
           <label htmlFor="max_price" className="block text-sm font-medium text-gray-700 mb-1">
             Giá tối đa (VNĐ)
@@ -121,7 +117,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
         </div>
       </div>
 
-      {/* Sort Options */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
@@ -157,7 +152,6 @@ const PropertyFiltersForm: React.FC<PropertyFiltersFormProps> = ({ filters, onFi
         </div>
       </div>
 
-      {/* Clear Filters Button */}
       <div className="mt-4 flex justify-end">
         <button
           type="button"

@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
-import { 
-  LoginCredentials, 
-  AuthResponse, 
-  Property, 
-  PropertyFormData, 
-  PropertyFilters, 
+import {
+  LoginCredentials,
+  AuthResponse,
+  Property,
+  PropertyFormData,
+  PropertyFilters,
   PaginatedResponse,
   ApiResponse,
-  PropertyImage
+  PropertyImage, RegisterCredentials
 } from '../types';
 
 const api = axios.create({
@@ -48,6 +48,11 @@ api.interceptors.response.use(
 class ApiService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/login', credentials);
+    return response.data;
+  }
+
+  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>('/register', credentials);
     return response.data;
   }
 

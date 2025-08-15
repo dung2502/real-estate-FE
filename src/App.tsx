@@ -8,8 +8,8 @@ import HomePage from './components/HomePage';
 import PropertyList from './components/PropertyList';
 import PropertyForm from './components/PropertyForm';
 import PropertyDetail from './components/PropertyDetail';
+import RegisterForm from './components/RegisterForm';
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -19,7 +19,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   
@@ -30,7 +29,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Public Route Component (redirect if already authenticated)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   
@@ -44,14 +42,18 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Routes */}
       <Route path="/login" element={
         <PublicRoute>
           <LoginForm />
         </PublicRoute>
       } />
-      
-      {/* Protected Routes */}
+
+        <Route path="/register" element={
+            <PublicRoute>
+                <RegisterForm />
+            </PublicRoute>
+        } />
+
       <Route path="/" element={
         <ProtectedRoute>
           <Layout>
@@ -91,8 +93,7 @@ const AppRoutes: React.FC = () => {
           </Layout>
         </ProtectedRoute>
       } />
-      
-      {/* Catch all route */}
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

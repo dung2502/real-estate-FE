@@ -4,6 +4,18 @@ export interface User {
   email: string;
 }
 
+export interface RegisterCredentials {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
 export interface PropertyImage {
   id: number;
   property_id: number;

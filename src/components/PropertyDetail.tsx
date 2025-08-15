@@ -361,7 +361,6 @@ const PropertyDetail: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Status */}
                         <div className="mt-6">
               <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(property.status)}`}>
@@ -369,7 +368,6 @@ const PropertyDetail: React.FC = () => {
               </span>
                         </div>
 
-                        {/* Description */}
                         {property.description && (
                             <div className="mt-6">
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">Mô tả</h3>
@@ -377,7 +375,6 @@ const PropertyDetail: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Features */}
                         {property.features && property.features.length > 0 && (
                             <div className="mt-6">
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">Tiện ích</h3>
@@ -394,7 +391,6 @@ const PropertyDetail: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Contact Information */}
                         <div className="mt-6">
                             <h3 className="text-lg font-medium text-gray-900 mb-2">Thông tin liên hệ</h3>
                             <div className="space-y-2">
@@ -418,7 +414,6 @@ const PropertyDetail: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Sidebar */}
                 <div className="lg:col-span-1">
                     <div className="bg-white shadow rounded-lg p-6 sticky top-8">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin tóm tắt</h3>
@@ -484,7 +479,6 @@ const PropertyDetail: React.FC = () => {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}

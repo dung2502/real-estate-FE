@@ -39,11 +39,12 @@ const PropertyForm: React.FC = () => {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
   const [newFeature, setNewFeature] = useState('');
+  const [formattedPrice, setFormattedPrice] = useState<string>('');
 
   const { data: property, isLoading: isLoadingProperty } = useQuery({
     queryKey: ['property', id],
@@ -60,6 +61,7 @@ const PropertyForm: React.FC = () => {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
     setValue,
   } = useForm({
@@ -107,6 +109,18 @@ const PropertyForm: React.FC = () => {
     }
   }, [existingImagesData]);
 
+  const formatCurrency = (value: string | number | null | undefined): string => {
+    if (value == null || value === '') return '';
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
+  useEffect(() => {
+    const priceValue = getValues('price');
+    if (priceValue) {
+      setFormattedPrice(formatCurrency(priceValue));
+    }
+  }, [getValues]);
+
   const createMutation = useMutation({
     mutationFn: (data: PropertyFormData) => apiService.createProperty(data),
     onSuccess: () => {
@@ -135,7 +149,7 @@ const PropertyForm: React.FC = () => {
   };
 
 const deleteImageMutation = useMutation({
-  mutationFn: ({ propertyId, imageId }: { propertyId: number; imageId: number }) => 
+  mutationFn: ({ propertyId, imageId }: { propertyId: number; imageId: number }) =>
     apiService.deletePropertyImage(propertyId, imageId),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['property-images', id] });
@@ -154,7 +168,7 @@ const removeImage = async (index: number) => {
         setImagePreviews(prev => prev.filter((_, i) => i !== index));
       } catch (error) {
         console.error('Error deleting image:', error);
-      
+
       }
     }
   } else {
@@ -232,7 +246,7 @@ const removeImage = async (index: number) => {
                       {...register('title')}
                       type="text"
                       id="title"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.title ? 'border-red-300' : ''
                       }`}
                   />
@@ -248,7 +262,7 @@ const removeImage = async (index: number) => {
                   <select
                       {...register('property_type')}
                       id="property_type"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.property_type ? 'border-red-300' : ''
                       }`}
                   >
@@ -268,16 +282,21 @@ const removeImage = async (index: number) => {
                     Giá (VNĐ) *
                   </label>
                   <input
-                    {...register('price', { valueAsNumber: true })}
-                    type="number"
+                      type="text"
                       id="price"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.price ? 'border-red-300' : ''
-                    }`}
-                        />
-                    {errors.price && (
-                        <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-                    )}
+                      value={formattedPrice}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, '');
+                        setFormattedPrice(formatCurrency(rawValue));
+                        setValue('price', rawValue ? parseInt(rawValue, 10) : 0, {shouldValidate: true});
+                      }}
+                      className={`mt-1 block w-full h-8 pl-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.price ? 'border-red-300' : ''
+                      }`}
+                  />
+                  {errors.price && (
+                      <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+                  )}
                 </div>
 
                 <div>
@@ -285,10 +304,10 @@ const removeImage = async (index: number) => {
                     Diện tích (m²) *
                   </label>
                   <input
-                    {...register('area', { valueAsNumber: true })}
+                      {...register('area', {valueAsNumber: true})}
                       type="number"
                       id="area"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.area ? 'border-red-300' : ''
                       }`}
                   />
@@ -304,7 +323,7 @@ const removeImage = async (index: number) => {
                   <select
                       {...register('status')}
                       id="status"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.status ? 'border-red-300' : ''
                       }`}
                   >
@@ -323,11 +342,11 @@ const removeImage = async (index: number) => {
                     Số phòng ngủ
                   </label>
                   <input
-                    {...register('bedrooms', { valueAsNumber: true })}
+                      {...register('bedrooms', {valueAsNumber: true})}
                       type="number"
                       id="bedrooms"
                       min="0"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.bedrooms ? 'border-red-300' : ''
                       }`}
                   />
@@ -341,11 +360,11 @@ const removeImage = async (index: number) => {
                     Số phòng tắm
                   </label>
                   <input
-                    {...register('bathrooms', { valueAsNumber: true })}
+                      {...register('bathrooms', {valueAsNumber: true})}
                       type="number"
                       id="bathrooms"
                       min="0"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.bathrooms ? 'border-red-300' : ''
                       }`}
                   />
@@ -359,11 +378,11 @@ const removeImage = async (index: number) => {
                     Số tầng
                   </label>
                   <input
-                    {...register('floors', { valueAsNumber: true })}
+                      {...register('floors', {valueAsNumber: true})}
                       type="number"
                       id="floors"
                       min="1"
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.floors ? 'border-red-300' : ''
                       }`}
                   />
@@ -377,14 +396,14 @@ const removeImage = async (index: number) => {
                     Năm xây dựng
                   </label>
                   <input
-                    {...register('year_built', { valueAsNumber: true })}
+                      {...register('year_built', {valueAsNumber: true})}
                       type="number"
                       id="year_built"
-                    min="1900"
-                    max={new Date().getFullYear()}
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                      errors.year_built ? 'border-red-300' : ''
-                    }`}
+                      min="1900"
+                      max={new Date().getFullYear()}
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                          errors.year_built ? 'border-red-300' : ''
+                      }`}
                   />
                   {errors.year_built && (
                       <p className="mt-1 text-sm text-red-600">{errors.year_built.message}</p>
@@ -404,7 +423,7 @@ const removeImage = async (index: number) => {
                       {...register('address')}
                       id="address"
                       rows={2}
-                      className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                      className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                           errors.address ? 'border-red-300' : ''
                       }`}
                       placeholder="Nhập địa chỉ chi tiết..."
@@ -422,7 +441,7 @@ const removeImage = async (index: number) => {
                     {...register('city')}
                     type="text"
                     id="city"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.city ? 'border-red-300' : ''
                     }`}
                   />
@@ -439,7 +458,7 @@ const removeImage = async (index: number) => {
                     {...register('district')}
                     type="text"
                     id="district"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.district ? 'border-red-300' : ''
                     }`}
                   />
@@ -456,7 +475,7 @@ const removeImage = async (index: number) => {
                     {...register('postal_code')}
                     type="text"
                     id="postal_code"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    className="mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
                 </div>
 
@@ -469,7 +488,7 @@ const removeImage = async (index: number) => {
                     type="number"
                     id="latitude"
                     step="any"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    className="mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                     placeholder="10.762622"
                   />
                 </div>
@@ -483,7 +502,7 @@ const removeImage = async (index: number) => {
                     type="number"
                     id="longitude"
                     step="any"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    className="mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                     placeholder="106.660172"
                   />
                 </div>
@@ -501,7 +520,7 @@ const removeImage = async (index: number) => {
                     {...register('contact_name')}
                     type="text"
                     id="contact_name"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.contact_name ? 'border-red-300' : ''
                     }`}
                   />
@@ -518,7 +537,7 @@ const removeImage = async (index: number) => {
                     {...register('contact_phone')}
                     type="tel"
                     id="contact_phone"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.contact_phone ? 'border-red-300' : ''
                     }`}
                   />
@@ -535,7 +554,7 @@ const removeImage = async (index: number) => {
                     {...register('contact_email')}
                     type="email"
                     id="contact_email"
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    className={`mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                       errors.contact_email ? 'border-red-300' : ''
                     }`}
                   />
@@ -556,7 +575,7 @@ const removeImage = async (index: number) => {
                   {...register('description')}
                   id="description"
                   rows={4}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 h-8 pl-2 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   placeholder="Mô tả chi tiết về bất động sản..."
                 />
               </div>
@@ -587,13 +606,13 @@ const removeImage = async (index: number) => {
                   value={newFeature}
                   onChange={(e) => setNewFeature(e.target.value)}
                   placeholder="Thêm tiện ích..."
-                  className="flex-1 border-gray-300 rounded-l-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="flex-1 border-gray-300 h-8 pl-2 rounded-l-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
                 />
                 <button
                   type="button"
                   onClick={addFeature}
-                  className="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 h-8 pl-2 rounded-r-md bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100"
                 >
                   Thêm
                 </button>

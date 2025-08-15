@@ -10,7 +10,7 @@ import PropertyFiltersForm from './PropertyFiltersForm';
 const PropertyList: React.FC = () => {
   const [filters, setFilters] = useState<PropertyFilters>({
     page: 1,
-    per_page: 10,
+    per_page: 2,
     sort: 'created_at',
     order: 'desc',
   });
